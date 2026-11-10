@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application - M-Pesa Integration</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .job-card {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #007bff;
+        }
+
+        .job-card h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .job-card p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Success Message Styles */
+        #successMessage {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e633;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Job Application</h1>
+        
+        <div class="job-card">
+            <h2>Senior Java Developer</h2>
+            <p><strong>Company:</strong> Tuta.io</p>
+            <p><strong>Location:</strong> Remote</p>
+            <p><strong>Description:</strong> We are looking for a senior developer to build our next big app. If you are interested, please apply below.</p>
+            <p><em>Application Deadline: 30 Days</em></p>
+        </div>
+
+        <form id="mpesaForm">
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Mobile Number (for M-Pesa)</label>
+                <input type="tel" id="phone" name="phone" placeholder="07XX XXX XXX" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="user@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message to the Hiring Manager</label>
+                <textarea id="message" name="message" rows="3" placeholder="Tell us why you want this job..."></textarea>
+            </div>
+
+            <button type="submit" onclick="submitToMpesa()">Apply via M-Pesa</button>
+        </form>
+
+        <div id="successMessage">
+            <strong>Success!</strong> Your details have been sent to <strong>emeje@tuta.io</strong>.
+        </div>
+    </div>
+
+    <script>
+        function submitToMpesa() {
+            // Get form values
+            const name = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+
+            if (!name || !phone || !email) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+
+            // M-Pesa API Base URL (Using KSH gateway as a placeholder, change to your preferred gateway)
+            const baseUrl = "https://gateway.mpesa.co.ke";
+            
+            // Construct the payload
+            const payload = {
+                mobile_money: {
+                    name: name,
+                    phone: phone,
+                    email: email,
+                    message: message,
+                    sender: "Tuta.io",
+                    date: new Date().toISOString()
+                }
+            };
+
+            // Send POST request to M-Pesa
+            const url = `${baseUrl}/api/mpesa/post?gateway=KES`;
+            
+            const formData = new FormData();
+            formData.append("mobile_money", JSON.stringify(payload));
+
+            fetch(url, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (response.status === 200 || response.status === 201) {
+                    // Success
+                    document.getElementById('mpesaForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                    return true;
+                } else {
+                    // Error
+                    alert("An error occurred while sending data. Please try again.");
+                    return false;
+                }
+            })
+            .catch(error => {
+                alert("Connection failed. Please check your internet connection.");
+                return false;
+            });
+        }
+    </script>
+
+</body>
+</html>
